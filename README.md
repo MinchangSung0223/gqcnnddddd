@@ -10,5 +10,5 @@ pip3 install .
 ./scripts/downloads/download_example_data.sh
 ./scripts/downloads/models/download_models.sh
 cd ../
-python3 two_arm_kinect_gqcnn.py
+python3 realsense_gqcnn.py
 ```
