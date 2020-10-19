@@ -185,7 +185,7 @@ def detect_img():
     global best_center
     def nothing(x):
        pass
-    mask = np.zeros((640,480),dtype=np.uint8)
+    mask = np.ones((640,480),dtype=np.uint8)
     cv2.namedWindow("rgb", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("rgb", 1280,720)
     cv2.createTrackbar('W', "rgb", 0, 100, nothing)
