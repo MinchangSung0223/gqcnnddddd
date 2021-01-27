@@ -5,7 +5,7 @@ sudo apt install python3-rtree
 apt-get install python3-tk
 cd gqcnn
 pip3 install trimesh
-pip3 install meshrender
+pip3 install meshrender==0.0.7
 pip3 install .
 ```
 ### 학습데이터 다운로드
