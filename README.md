@@ -27,6 +27,10 @@ sudo add-apt-repository "deb http://realsense-hw-public.s3.amazonaws.com/Debian/
 ```
 ```bash
  sudo apt-get install librealsense2-dkms librealsense2-utils librealsense2-dev librealsense2-dbg
+ pip3 install pyrealsense2
+ pip3 install tqdm
+ pip3 install torch
+ pip3 install pycocotools
 ```
 ### 학습데이터 다운로드
 ```bash
