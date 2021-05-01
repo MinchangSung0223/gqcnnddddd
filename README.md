@@ -5,7 +5,9 @@ sudo apt install python3-rtree
 apt-get install python3-tk
 cd gqcnn
 pip3 install trimesh
+```
 ~pip3 install meshrender==0.0.7~
+```bash
 git clone https://github.com/BerkeleyAutomation/meshrender.git
 
 pip3 install .
