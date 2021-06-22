@@ -1,7 +1,7 @@
 pyglet==1.4.0b1
-autolab-core
-autolab-perception
-visualization
+autolab-core==0.0.14
+autolab-perception==0.0.8
+visualization==0.1.1
 numpy
 opencv-python
 scipy
