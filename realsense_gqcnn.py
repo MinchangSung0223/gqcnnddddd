@@ -38,6 +38,7 @@ policy_config = config["policy"]
 policy_type = "cem"
 policy = CrossEntropyRobustGraspingPolicy(policy_config)
 
+
 def run_gqcnn():
    global depth_im
    global color_im
@@ -61,22 +62,25 @@ def run_gqcnn():
    global angle
    global no_valid_grasp_count
    global no_valid_move_y 
+   global depth_frame
+   global frames
    no_valid_grasp_count = 0;
-
+   time.sleep(1)
+   depth_frame = frames.get_depth_frame()
+   depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
    best_angle = 0
    x=0.0
    y=0.5
    action =0
+   num_find_loc=0
    while 1:
      try:
-       print("GQCNN IS RUNNING")
        #depth_im = depth_im.inpaint(rescale_factor=inpaint_rescale_factor)
        if "input_images" in policy_config["vis"] and policy_config["vis"][
             "input_images"]:
              plt.pause(0.001)
              #pass
        # Create state.
-       print("GQCNN IS RUNNING2")
        rgbd_im = RgbdImage.from_color_and_depth(color_im, depth_im)
        state_gqcnn = RgbdImageState(rgbd_im, camera_intr, segmask=segmask) 
 
@@ -90,11 +94,17 @@ def run_gqcnn():
           print(inst)
           no_valid_grasp_count = no_valid_grasp_count+1;
           time.sleep(0.3)
-       print("GQCNN IS RUNNING3")
+
        if policy_config["vis"]["final_grasp"]:
-        print("GQCNN IS RUNNING4")
         center[0] = action.grasp.center[0]
         center[1] = action.grasp.center[1]
+        depth = depth_frame.get_distance(int(center[0]), int(center[1]))
+        depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [int(center[0]), int(center[1])], depth)
+        print(depth_point)
+
+
+
+
         q_value = action.q_value
         angle = float(action.grasp.angle)*180/3.141592
         print("center : \t"+str(action.grasp.center))
@@ -105,18 +115,23 @@ def run_gqcnn():
         #x = -1*convert_data[0]/1000
         #y = -1*convert_data[1]/1000
         #z = convert_data[2]/1000 
-        print("XYZ : \t" +str(x)+" , "+str(y)+" , "+str(z))
+        #print("XYZ : \t" +str(x)+" , "+str(y)+" , "+str(z))
         print("\n\n\n\n\n\n\nQ_value : \t" +str(action.q_value))
         if(prev_q_value<action.q_value):
            prev_q_value = action.q_value
            prev_depth = action.grasp.depth
            best_center[0] =action.grasp.center[0]
            best_center[1] =action.grasp.center[1]
+           depth = depth_frame.get_distance(int(best_center[0]), int(best_center[1]))
+           
+           depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [int(best_center[0]), int(best_center[1])], depth)
+           print(depth_point)
            #convert_data_ = convert_2d_2d(int(best_center[0]),int(best_center[1]))
            #convert_data=convert_2d_3d(int(convert_data_[0]),int(convert_data_[1]))
-           #x = -1*convert_data[0]/1000
-           #y = -1*convert_data[1]/1000
-           #z = convert_data[2]/1000
+
+           x = depth_point[0]
+           y = depth_point[1]
+           z = depth_point[2]
 
            best_angle = action.grasp.angle
            best_angle = float(best_angle)*180/3.141592
@@ -124,7 +139,8 @@ def run_gqcnn():
            print("gqcnn_best_center : \t"+str(x)+","+str(y))
            print("best_angle : \t"+str(best_angle))
            print("\n\n\n\n\n\n\nbest_Q_value : \t" +str(action.q_value))
-           print("XYZ : \t" +str(x)+str(y)+str(z))
+           #print("XYZ : \t" +str(x)+str(y)+str(z))
+
         num_find_loc = num_find_loc+1
         if num_find_loc >5:
            prev_q_value = 0
@@ -183,6 +199,8 @@ def detect_img():
     global best_angle
     global prev_q_value
     global best_center
+    global depth_frame
+    global frames
     def nothing(x):
        pass
     mask = np.ones((640,480),dtype=np.uint8)*255
@@ -198,6 +216,7 @@ def detect_img():
 
     divide_value = 65535
     pipeline.start(config)
+    frames = pipeline.wait_for_frames()
     while 1:
      try:
       frames = pipeline.wait_for_frames()
@@ -209,7 +228,7 @@ def detect_img():
             continue
       depth_to_color_img = np.asanyarray(depth_frame.get_data())/divide_value
       color_img = np.asanyarray(color_frame.get_data())
-      print(depth_to_color_img)
+      #print(depth_to_color_img)
       depth_im =DepthImage(depth_to_color_img.astype("float32"), frame=camera_intr.frame)
       color_im = ColorImage(np.zeros([480, 640,
                                     3]).astype(np.uint8),
@@ -250,7 +269,6 @@ if __name__ == '__main__':
     t1.start()
     t3 = threading.Thread(target=run_gqcnn)
     t3.start()
-
 
 
 
