@@ -262,9 +262,41 @@ def detect_img():
       print(inst)
       pass
     end()
+
+
+
+def do_Robot():
+	READY=0;
+	FIND=1;
+	GRASP=2;
+	global state
+	global x
+	global y
+	global z
+		
+	state = READY;
+	time.sleep(1)
+	while(1):
+		if state==READY:
+			print("READY STATE")
+			try:
+				print("X:",x," | Y:",y," | Z:",z)
+			except:
+				print("No DATA")
+		elif state==FIND:
+			print("FIND STATE")
+		elif state==GRASP:
+			print("GRASP STATE")
+		time.sleep(0.1);
+
 if __name__ == '__main__':
     t1 = threading.Thread(target=detect_img)
     t1.start()
+
+    t2 = threading.Thread(target=do_Robot)
+    t2.start()
+
+
     t3 = threading.Thread(target=run_gqcnn)
     t3.start()
 
