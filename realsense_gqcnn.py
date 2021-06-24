@@ -38,7 +38,12 @@ policy_config = config["policy"]
 policy_type = "cem"
 policy = CrossEntropyRobustGraspingPolicy(policy_config)
 
-
+def convert_depth_frame_to_pointcloud(u,v,z):
+	camera_intrinsics ={"fx":608.13312805,"ppx": 324.970655,"fy":612.61549006,"ppy":242.1411}
+	x = (u - camera_intrinsics["ppx"])/camera_intrinsics["fx"]
+	y = (v - camera_intrinsics["ppy"])/camera_intrinsics["fy"]
+	z = z ;
+	return x,y,z
 def run_gqcnn():
    global depth_im
    global color_im
@@ -99,23 +104,19 @@ def run_gqcnn():
         center[0] = action.grasp.center[0]
         center[1] = action.grasp.center[1]
         depth = depth_frame.get_distance(int(center[0]), int(center[1]))
-        depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [int(center[0]), int(center[1])], depth)
-        print(depth_point)
+       #depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [int(center[0]), int(center[1])], depth)
+        #print(depth_point)
 
 
 
 
         q_value = action.q_value
         angle = float(action.grasp.angle)*180/3.141592
+        x,y,z = convert_depth_frame_to_pointcloud(int(center[0]), int(center[1]),depth)
         print("center : \t"+str(action.grasp.center))
         print("angle : \t"+str(action.grasp.angle)) 
         print("Depth : \t"+str(action.grasp.depth)) 
-        #convert_data_ = convert_2d_2d(int(center[0]),int(center[1]))
-        #convert_data=convert_2d_3d(int(convert_data_[0]),int(convert_data_[1]))
-        #x = -1*convert_data[0]/1000
-        #y = -1*convert_data[1]/1000
-        #z = convert_data[2]/1000 
-        #print("XYZ : \t" +str(x)+" , "+str(y)+" , "+str(z))
+
         print("\n\n\n\n\n\n\nQ_value : \t" +str(action.q_value))
         if(prev_q_value<action.q_value):
            prev_q_value = action.q_value
@@ -124,14 +125,11 @@ def run_gqcnn():
            best_center[1] =action.grasp.center[1]
            depth = depth_frame.get_distance(int(best_center[0]), int(best_center[1]))
            
-           depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [int(best_center[0]), int(best_center[1])], depth)
-           print(depth_point)
+           #depth_point = rs.rs2_deproject_pixel_to_point(depth_intrin, [int(best_center[0]), int(best_center[1])], depth)
+           #print(depth_point)
            #convert_data_ = convert_2d_2d(int(best_center[0]),int(best_center[1]))
            #convert_data=convert_2d_3d(int(convert_data_[0]),int(convert_data_[1]))
-
-           x = depth_point[0]
-           y = depth_point[1]
-           z = depth_point[2]
+           x,y,z = convert_depth_frame_to_pointcloud(int(best_center[0]), int(best_center[1]),depth)
 
            best_angle = action.grasp.angle
            best_angle = float(best_angle)*180/3.141592
@@ -139,7 +137,7 @@ def run_gqcnn():
            print("gqcnn_best_center : \t"+str(x)+","+str(y))
            print("best_angle : \t"+str(best_angle))
            print("\n\n\n\n\n\n\nbest_Q_value : \t" +str(action.q_value))
-           #print("XYZ : \t" +str(x)+str(y)+str(z))
+           print("XYZ : \t" +str(x)+"\t"+str(y)+"\t"+str(z))
 
         num_find_loc = num_find_loc+1
         if num_find_loc >5:
