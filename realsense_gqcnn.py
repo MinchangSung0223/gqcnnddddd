@@ -70,7 +70,7 @@ def run_gqcnn():
    global depth_frame
    global frames
    no_valid_grasp_count = 0;
-   time.sleep(1)
+   time.sleep(3)
    depth_frame = frames.get_depth_frame()
    depth_intrin = depth_frame.profile.as_video_stream_profile().intrinsics
    best_angle = 0
